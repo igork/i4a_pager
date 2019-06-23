@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/timeroff"
+        android:actionLayout="@layout/toolbar"
+        android:orderInCategory="100"
+        android:title="Timer Off"
+        android:icon="@drawable/baseline_timer_off_24"
+        app:showAsAction="ifRoom|collapseActionView" />
+
+    <item android:id="@+id/timeron"
+        android:actionLayout="@layout/toolbar"
+        android:title="Timer On"
+        android:visible="false"
+        android:orderInCategory="200"
+        android:icon="@drawable/baseline_timer_on_24"
+        app:showAsAction="ifRoom|collapseActionView"/>
+
+    <item
+        android:id="@+id/menu_main_refresh"
+        android:icon="@drawable/baseline_cached_24"
+        android:orderInCategory="300"
+        app:showAsAction="always"
+        android:actionLayout="@layout/toolbar"
+        android:title="Refresh" />
+
+</menu>

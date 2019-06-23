@@ -1,0 +1,260 @@
+package com.example.myswipe;
+
+//UTN
+//This solution needs to request for android.permission.READ_PHONE_STATE
+
+import android.app.Activity;
+import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.telephony.TelephonyManager;
+import android.content.Context;
+
+//Secure
+import android.provider.Settings;
+import android.provider.Settings.Secure;
+
+//UUI
+import java.lang.reflect.Field;
+import java.util.UUID;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.util.Log;
+
+import com.example.myswipe.lib.CustomizedProperties;
+import com.location.aravind.getlocation.GeoLocator;
+
+public class DeviceService {
+
+    private static final String TAG = DeviceService.class.getName();
+
+    public enum deviceInfo {
+        address,
+        latitude,
+        longitude,
+        androidId,
+        //appId, //uui,
+        utn,
+        OS,
+        network,
+        model
+    };
+
+
+    // https://medium.com/@ssaurel/how-to-retrieve-an-unique-id-to-identify-android-devices-6f99fd5369eb
+
+    //Unique Telephony Number (IMEI, MEID, ESN, IMSI)
+    //This solution needs to request for android.permission.READ_PHONE_STATE
+    // <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    public synchronized static String getUTN(Context context){
+
+        try {
+            TelephonyManager telephonyManager;
+
+            telephonyManager = (TelephonyManager) context.getSystemService(Context.
+                    TELEPHONY_SERVICE);
+
+            // getDeviceId() returns the unique device ID.
+            // For example,the IMEI for GSM and the MEID or ESN for CDMA phones.
+            String deviceId = telephonyManager.getDeviceId();
+
+            //getSubscriberId() returns the unique subscriber ID,
+            //For example, the IMSI for a GSM phone.
+            String subscriberId = telephonyManager.getSubscriberId();
+
+            return deviceId + " - " + subscriberId;
+        } catch (SecurityException se) {
+            se.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    //require <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    public synchronized static String getPhoneNumber(Context context){
+        TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        //String phoneNumber = tMgr.getLine1Number();
+        return null;
+    }
+
+    //Secure Android ID
+    public synchronized static String getAndroidId(Context context){
+
+        //String androidId = Settings.Secure.getString(getContentResolver(),
+        //       Settings.Secure.ANDROID_ID);
+
+        String androidId = Secure.getString(context.getContentResolver(),
+                Secure.ANDROID_ID);
+        return androidId;
+    }
+
+    //get UUI
+    private static String uniqueID = null;
+    private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
+
+    public synchronized static String getUUI(Context context) {
+        if (uniqueID == null) {
+            SharedPreferences sharedPrefs = context.getSharedPreferences(
+                    PREF_UNIQUE_ID, Context.MODE_PRIVATE);
+            uniqueID = sharedPrefs.getString(PREF_UNIQUE_ID, null);
+
+            if (uniqueID == null) {
+                uniqueID = UUID.randomUUID().toString();
+                Editor editor = sharedPrefs.edit();
+                editor.putString(PREF_UNIQUE_ID, uniqueID);
+                editor.commit();
+            }
+        }
+
+        return uniqueID;
+    }
+
+    public synchronized static String getAndroidVersion(Context context){
+
+        //https://stackoverflow.com/questions/10547818/how-to-find-the-android-version-name-programmatically
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("").append(Build.VERSION.RELEASE);
+
+        Field[] fields = Build.VERSION_CODES.class.getFields();
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            int fieldValue = -1;
+
+            try {
+                if (field.getInt(Build.VERSION_CODES.class) == Build.VERSION.SDK_INT) {
+                    builder.append(" ").append(fieldName).append(" ");
+                    //builder.append("sdk: ").append(fieldValue);
+                } else {
+                    try {
+                        fieldValue = field.getInt(new Object());
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
+                    if (fieldValue == Build.VERSION.SDK_INT) {
+                        builder.append(" ").append(fieldName).append(" ");
+                        builder.append("sdk: ").append(fieldValue);
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /*
+        try {
+            if (field.getInt(Build.VERSION_CODES.class) == Build.VERSION.SDK_INT) {
+                codeName = field.getName();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        */
+        return builder.toString();
+    }
+
+    public synchronized static String getModel(Context context){
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        return manufacturer + " " + model;
+    }
+    /*
+    public synchronized static Properties getHeader(Context context) {
+        Properties prop = new Properties();
+
+        prop.setProperty("uui",getUUI(context));
+        prop.setProperty("androidId",getAndroidId(context));
+        prop.setProperty("utn",getUTN(context));
+
+        return prop;
+    }
+    */
+    public static CustomizedProperties getInfo(Context context, Activity activity) {
+
+        CustomizedProperties prop = new CustomizedProperties();
+        String unknown = "unknown";
+        Location location = new Location(unknown);
+
+        try {
+            GeoLocator geoLocator = new GeoLocator(context, activity);
+            //update location
+            String address = geoLocator.getAddress();
+            //refresh static
+            if (address != null && !address.isEmpty()) {
+                location.setProvider(address);
+            }
+            location.setLatitude(geoLocator.getLattitude());
+            location.setLongitude(geoLocator.getLongitude());
+
+            //update prop
+            prop.clear();
+            prop.add(deviceInfo.latitude, "" + location.getLatitude());
+            prop.add(deviceInfo.longitude, "" + location.getLongitude());
+            if (!location.getProvider().equalsIgnoreCase(unknown))
+                prop.add(deviceInfo.address, location.getProvider());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            prop.add(deviceInfo.network, networkConnection(context, activity));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            prop.add(deviceInfo.OS, DeviceService.getAndroidVersion(context));
+            prop.add(deviceInfo.model, DeviceService.getModel(context));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            String androidId = DeviceService.getAndroidId(activity);
+            String uui = DeviceService.getUUI(activity);
+            String utn = DeviceService.getUTN(activity);
+
+            String log = "adnroid=" + androidId + " uui=" + uui + " utn=" + utn;
+            Log.i(TAG,log);
+
+            prop.add(deviceInfo.androidId,androidId);
+            //prop.add(deviceInfo.appId,uui);
+            prop.add(deviceInfo.utn,utn);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return prop;
+    }
+
+    //<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    public static String networkConnection(Context context, Activity activity) {
+        String connected = "no network";
+        ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(context.CONNECTIVITY_SERVICE);
+
+        if ((connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED) &&
+                (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED)) {
+            connected = "mobile, wi-fi";
+        } else {
+
+            if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED) {
+
+                connected = "mobile";
+            }
+            if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                connected = "wi-fi";
+            }
+        }
+        return connected;
+    }
+
+}
