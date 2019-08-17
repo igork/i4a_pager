@@ -20,9 +20,10 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.util.Log;
+//import android.util.Log;
 
 import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.Log;
 import com.location.aravind.getlocation.GeoLocator;
 
 public class DeviceService {
@@ -223,7 +224,7 @@ public class DeviceService {
             String utn = DeviceService.getUTN(activity);
 
             String log = "adnroid=" + androidId + " uui=" + uui + " utn=" + utn;
-            Log.i(TAG,log);
+            Log.log(log);
 
             prop.add(deviceInfo.androidId,androidId);
             //prop.add(deviceInfo.appId,uui);

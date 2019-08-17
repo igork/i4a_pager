@@ -3,29 +3,58 @@ package com.example.myswipe;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 
 import android.os.Build;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myswipe.lib.BlankFragment;
+import com.example.myswipe.lib.CustomAdapter2;
+import com.example.myswipe.lib.CustomAsyncTask;
 import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.Log;
 import com.example.myswipe.lib.WebService;
+import com.example.myswipe.lib.CustomListAdapter;
+import com.example.myswipe.lib.ListItem;
+
+
+import org.jetbrains.annotations.NotNull;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class MainActivity extends AppCompatActivity {
-    String pageData[];            //Stores the text to swipe.
+    //String pageData[];            //Stores the text to swipe.
     LayoutInflater inflater;    //Used to create individual pages
 
     ViewPager vp;                //Reference to class to swipe views
@@ -39,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static CustomizedProperties deviceInfoProps = new CustomizedProperties();
 
+    //private CustomizedProperties reportProps = new CustomizedProperties();
 
     private static final String TAG = MainActivity.class.getName();
 
@@ -49,22 +79,16 @@ public class MainActivity extends AppCompatActivity {
 
         //CustomizedProperties prop = DeviceService.getInfo(getApplicationContext(), MainActivity.this);
 
-        //Get the data to be swiped through
-        pageData = getResources().getStringArray(R.array.desserts);
-
-        pageData = new String[]{"one","two","three"};
-
         //get an inflater to be used to create single pages
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         //Reference ViewPager defined in activity
         vp = (ViewPager) findViewById(R.id.viewPager);
-
-        //https://stackoverflow.com/questions/12539961/destroyitem-being-called-when-position-2-why-android-pageradapter
-        vp.setOffscreenPageLimit(2);
-
         //set the adapter that will create the individual pages
         adapter = new MyPagesAdapter();
+        vp.setOffscreenPageLimit(adapter.getCount());
         vp.setAdapter(adapter);
+
+
     }
 
 	/*
@@ -94,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
 
     //Implement PagerAdapter Class to handle individual page creation
     class MyPagesAdapter extends PagerAdapter {
+
+        String[] pageData = new String[]{"one","two","three","four","five","six"};
+
         @Override
         public int getCount() {
             //Return total pages, here one for each data item
@@ -108,32 +135,64 @@ public class MainActivity extends AppCompatActivity {
             //((TextView)page.findViewById(R.id.textMessage)).setText(getPageData(position)); //pageData[position]);
             TextView tv = (TextView) page.findViewById(R.id.textMessage);
 
-            Log("position: " + position);
+            Log.log("position: " + position);
 
             //Log("getItemPosition: " + this.getItemPosition());
+            /*
             Object tag =  page.getTag();
             if (tag==null){
                 page.setTag("" + position);
             }
             Log("tag: " + page.getTag());
+            */
 
             switch (position){
+
+                case 0:
+                    deviceInfoProps = DeviceService.getInfo(getApplicationContext(),MainActivity.this);
+                    tv.setText(deviceInfoProps.toString());
+
+                    break;
 
                 case 1:
                     showProgress(MainActivity.this, tv,deviceInfoProps);
                     break;
+
                 case 2:
+                    page = inflater.inflate(R.layout.page4list, null);
+                    showList4(MainActivity.this,page);
+                    break;
+
+                case 3:
                     tv.setGravity(Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL | Gravity.LEFT);
                     //https://alvinalexander.com/android/how-to-set-font-size-style-textview-programmatically
                     tv.setTextAppearance(MainActivity.this, R.style.fontForReport);
                     showReport(MainActivity.this,tv);
-
                     break;
-                case 0:
+
+                case 4:
+                    tv.setClickable(true);
+                    tv.setMovementMethod(LinkMovementMethod.getInstance());
+                    tv.setText(showAbout());
+                    break;
+                    //WebView wv = (WebView) page.findViewById(R.id.webview);
+                    //String web = "https://www.journaldev.com";
+                   // WebPage.getWeb(wv,web);
+                    //break;
+
+                case 5:
+                    /*
+                    ImageView iv = (ImageView) page.findViewById(R.id.imageView);
+                    String image = "https://ic.pics.livejournal.com/lena-miro.ru/25587933/3467608/3467608_original.jpg";
+                    new ImagePage().getImage(iv); //.getImage2(iv,image);
+                    break;
+                    */
+
+
                 default:
                     //tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
                     //tv.setGravity(Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL | Gravity.LEFT);
-                    tv.setText(getPageData(position));
+                    tv.setText("No data");
                     break;
             }
             //if (position == 1) {
@@ -167,6 +226,60 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @NotNull
+    public Spanned showAbout() {
+        String about = "";
+
+        Map<String,String> link = new HashMap<String,String>() {
+            {
+                put("site","http://igorkourski.000webhostapp.com");
+                put("github","http://github.com/igork");
+                put("bitbucket","http://bitbucket.org/igorkourski/");
+                put("php","http://igorkourski.000webhostapp.com/sandbox/one.php?ig=kr&kr=ig");
+                put("python","http://igoryk.pythonanywhere.com");
+            }
+        };
+
+        for (String url: link.values()){
+
+            about += "<a href=\"" + url + "\">" + url + "</a><br />";
+
+        }
+
+        return Html.fromHtml("<p>" + about + "</p>");//,Html.FROM_HTML_MODE_COMPACT);
+    }
+    public void test(TextView htmlTextView){
+        String htmlString = "<img src='ic_launcher'><i>Welcome to<i> <b><a href='https://stackoverflow.com/'>Stack Overflow</a></b>";
+
+            htmlTextView.setText(Html.fromHtml(htmlString, new Html.ImageGetter(){
+
+                @Override
+                public Drawable getDrawable(String source) {
+                    Drawable drawable;
+                    int dourceId =
+                            getApplicationContext()
+                                    .getResources()
+                                    .getIdentifier(source, "drawable", getPackageName());
+
+                    drawable =
+                            getApplicationContext()
+                                    .getResources()
+                                    .getDrawable(dourceId);
+
+                    drawable.setBounds(
+                            0,
+                            0,
+                            drawable.getIntrinsicWidth(),
+                            drawable.getIntrinsicHeight());
+
+                    return drawable;
+                }
+
+            }, null));
+
+            htmlTextView.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+    /*
     public String getPageData(int position) {
         switch (position) {
             case 0:
@@ -178,6 +291,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+    */
 /*
     private int currentPage;
 
@@ -198,6 +312,16 @@ public class MainActivity extends AppCompatActivity {
     code:
     https://en.proft.me/2016/07/22/how-create-actionbartoolbar-and-menu-android/
     */
+
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -302,6 +426,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    public void getReport(final Activity activity, TextView tv){
+        //http://igorkourski.000webhostapp.com/sandbox/report.php?ig=kr&kr=ig
+        //{"data":[{"number":1,"id":"205","ip":"10.0.0.130","time":"2019-06-16 00:00:14"},{"number":2,"id":"204","ip":"24.4.171.103","time":"2019-06-15 23:11:31"},
+
+        ReportService ws = new ReportService(activity,deviceInfoProps);
+        //String per = ws.getResponse();
+        //tv.setText(per);
+        new AsyncSilent(activity, ws, tv).execute();
+    }
+
     public void showReport(final Activity activity, TextView tv){
         //http://igorkourski.000webhostapp.com/sandbox/report.php?ig=kr&kr=ig
         //{"data":[{"number":1,"id":"205","ip":"10.0.0.130","time":"2019-06-16 00:00:14"},{"number":2,"id":"204","ip":"24.4.171.103","time":"2019-06-15 23:11:31"},
@@ -309,20 +444,30 @@ public class MainActivity extends AppCompatActivity {
         ReportService ws = new ReportService(activity,deviceInfoProps);
         //String per = ws.getResponse();
         //tv.setText(per);
-        new AsyncSilent(activity, tv, ws).execute();
+        AsyncSilent task = new AsyncSilent(activity, ws, tv);
+        task.execute();
+        //reportProps = task.responseProps;//ws.getResponseProps();
     }
 
     public class AsyncSilent extends AsyncTask {
 
         Activity activity;
         TextView tv;
-        //CustomizedProperties deviceInfo;
+        ListView listView;
+
         String output;
         WebService ws;
 
-        public AsyncSilent(Activity activity, TextView tv, WebService ws){
+
+        public AsyncSilent(Activity activity, WebService ws, TextView tv){
             this.activity = activity;
             this.tv = tv;
+            this.ws = ws;
+        }
+
+        public AsyncSilent(Activity activity, WebService ws, ListView listView){
+            this.activity = activity;
+            this.listView = listView;
             this.ws = ws;
         }
 
@@ -331,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
             super.onPreExecute();
         }
 
-            @Override
+        @Override
         protected Object doInBackground(Object[] objects) {
 
             //wait for 5 secs
@@ -368,6 +513,89 @@ public class MainActivity extends AppCompatActivity {
             */
 
             output = getWebServiceResponseData(activity,ws);
+            Log.log("Output: " + output);
+            return output; //getWebServiceResponseData();
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            super.onPostExecute(o);
+
+            if (tv!=null) {
+                tv.setText(output);
+            }
+            if (listView!=null) {
+                CustomizedProperties props = ws.getResponseProps();
+
+                if( props!=null ) {
+                    ArrayAdapter adapter = new ArrayAdapter<String>(activity,
+                            R.layout.activity_listview,
+                            props.getStringValues());//mobileArray);
+
+                    //ArrayAdapter adapterList = new ArrayAdapter<reportItem>(this,
+                    //        R.layout.activity_listview,
+                    //        mobileArray);
+
+                    //ListView listView = (ListView) findViewById(R.id.mobile_list);
+                    listView.setAdapter(adapter);
+
+                    //on click
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                            //String selItem = (String) listView.getSelectedItem(); //WRONG
+                            //String value= selItem.getTheValue(); //getter method
+
+                            //String tmp = (String) adapterView.getItemAtPosition(position) + " pos=" + position + " id=" + id;
+
+                            //loadFragment(view,(String) adapterView.getItemAtPosition(position),"id: " + position);
+
+                        }
+                    });
+                }
+
+            }
+
+        }
+
+
+    }
+
+
+
+/*
+    public class CustomAsyncTask extends AsyncTask {
+
+        Activity activity;
+        TextView tv;
+
+        ListView listView;
+        ArrayList<ListItem> item;
+
+        String output;
+        WebService ws;
+
+
+
+        public CustomAsyncTask(Activity activity, WebService ws, ListView listView){
+            this.activity = activity;
+            this.listView = listView;
+            this.ws = ws;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+
+            //wait for 5 secs
+            //(new Handler()).postDelayed(this::yourMethod, 5000);
+
+            output = getWebServiceResponseData(activity,ws);
             Log("Output: " + output);
             return output; //getWebServiceResponseData();
         }
@@ -375,11 +603,59 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
-            tv.setText(output);
+
+            if (tv!=null) {
+                tv.setText(output);
+            }
+            if (listView!=null) {
+                CustomizedProperties props = ws.getResponseProps();
+
+                if( props!=null) {
+
+                    ArrayList<ListItem> item = new ArrayList<ListItem>(
+                            Arrays.asList(
+                                    new ListItem("time", new String[]{"reserved", "ip"}),
+                                    new ListItem("two", new String[]{"a", "bbbbbbbbbb"}),
+                                    new ListItem("one", new String[]{"c", "dddddddddddddddddddd\nddddddddddddddddddddddddd\n\nddddddddddddddddd"}),
+                                    new ListItem("two", new String[]{"e", "f","g"}),
+                                    new ListItem("two",null),
+                                    new ListItem("last",null)
+
+                            )
+
+                    );
+
+                    //props to array
+                    BaseAdapter adapter;
+                    if( ws instanceof ReportService ){
+                        adapter = new CustomAdapter2(getApplicationContext(),((ReportService) ws).toArrayList(props));
+                    } else {
+                        adapter = new ArrayAdapter<String>(activity,
+                                R.layout.activity_listview,
+                                props.getStringValues());//mobileArray);
+                    }
+
+                    //listView = (ListView) findViewById(R.id.mobile_list);
+                    listView.setAdapter(adapter);
+
+                    //on click
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                            Object tmp = adapterView.getItemAtPosition(position);
+                            if (tmp!=null) {
+                                loadFragment(view, "position: " + position + " " + tmp, "");
+                            }
+
+                        }
+                    });
+
+                }
+            }
         }
-
-
     }
+*/
 
     public class GetServerData extends AsyncTask {
         public String path;
@@ -428,7 +704,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             output = getWebServiceResponseData(activity,ws);
-            Log("Output: " + output);
+            Log.log("Output: " + output);
             return output; //getWebServiceResponseData();
         }
 
@@ -460,21 +736,180 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    protected static void Log(String text) {
-        Log.i(TAG,text);
-        System.out.println(text);
-    }
-
     public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
+        String response = null;
         try {
-            String response = ws.getResponse();
-            Log("Response: " + response);
-            return response;
-
+            response = ws.getResponse();
         } catch (Exception e) {
-            e.printStackTrace();
+            response = e.getMessage();
         }
-        return "No Response";
+        Log.log("Response: " + response);
+        return response;
+    }
+/*
+    public ListView showList2(final Activity activity,View page){
+
+        ListView listView = (ListView) page.findViewById(R.id.mobile_list);
+
+        ReportService ws = new ReportService(activity,deviceInfoProps);
+            //String per = ws.getResponse();
+            //tv.setText(per);
+        AsyncSilent task = new AsyncSilent(activity, ws, listView);
+        task.execute();
+
+        return listView;
+
     }
 
+    public ListView showList3(final Activity activity,View page){
+
+
+        ListView listView = (ListView) page.findViewById(R.id.mobile_list);
+        ArrayList<ListItem> item = new ArrayList<ListItem>(
+                Arrays.asList(
+                        new ListItem("one", new String[]{"0000", "1"}),
+                        new ListItem("two", new String[]{"a", "b"}),
+                        new ListItem("one", new String[]{"c", "dddddddddddddddddddd\nddddddddddddddddddddddddd\n\nddddddddddddddddd"}),
+                        new ListItem("two", new String[]{"e", "f","g"}),
+                        new ListItem("two",null),
+                        new ListItem("last",null)
+
+                )
+
+        );
+
+        CustomListAdapter adapter = new CustomListAdapter(this,item);
+
+        //listView = (ListView) findViewById(R.id.mobile_list);
+        listView.setAdapter(adapter);
+
+        //on click
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                //String tmp = (String) adapterView.getItemAtPosition(position);
+                //loadFragment(view,tmp,tmp);
+
+                ListItem tmp0 = (ListItem) adapterView.getItemAtPosition(position);
+                if (tmp0.value!=null) {
+
+                    loadFragment(view, tmp0.key, tmp0.value);
+                }
+
+            }
+        });
+
+        return listView;
+
+    }
+*/
+    public ListView showList4(final AppCompatActivity activity,View page){
+        ListView listView = (ListView) page.findViewById(R.id.mobile_list);
+
+        ReportService ws = new ReportService(activity,deviceInfoProps);
+        //String per = ws.getResponse();
+        //tv.setText(per);
+        CustomAsyncTask task = new CustomAsyncTask(activity, ws, listView);
+        task.execute();
+
+        return listView;
+    }
+
+/*
+    public ListView showList(View page){
+
+        CustomizedProperties reportProps = new CustomizedProperties();
+
+        ListView listView = (ListView) page.findViewById(R.id.mobile_list);
+
+        if( reportProps==null){
+            return listView;
+        }
+
+        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.activity_listview,
+                reportProps.getStringValues());//mobileArray);
+
+        //ArrayAdapter adapterList = new ArrayAdapter<reportItem>(this,
+        //        R.layout.activity_listview,
+        //        mobileArray);
+
+        //ListView listView = (ListView) findViewById(R.id.mobile_list);
+        listView.setAdapter(adapter);
+
+        //on click
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                //String selItem = (String) listView.getSelectedItem(); //WRONG
+                //String value= selItem.getTheValue(); //getter method
+
+                //String tmp = (String) adapterView.getItemAtPosition(position) + " pos=" + position + " id=" + id;
+                Object obj = ((ListView)view).getAdapter().getItem(position);
+                loadFragment(view,(String) adapterView.getItemAtPosition(position),"id: " + position);
+
+            }
+        });
+
+        //on select
+        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                String tmp = (String) adapterView.getItemAtPosition(position);
+
+
+                //loadFragment(view,tmp);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // your stuff
+            }
+
+        });
+
+        return listView;
+    }
+*/
+
+/*
+    @Override
+    public void onAttach(Activity activity) {
+        context = (FragmentActivity) activity;
+        super.onAttach(activity);
+    }
+
+3) Get the support FragmentManager like this:
+
+    FragmentManager fm = context.getSupportFragmentManager();
+
+    public void loadFragment(View view, String title, String text) {
+        BlankFragment blankFragment = new BlankFragment();
+        blankFragment.setText(text);
+        blankFragment.setTitle(title);
+        blankFragment.show(getSupportFragmentManager(), BLANK_FRAGMENT_TAG);
+    }
+
+    public void loadFragment(View view, String title, String[] list) {
+        BlankFragment blankFragment = new BlankFragment();
+
+        List<String> slist = Arrays.asList(list);
+        blankFragment.setList(slist);
+
+        blankFragment.setTitle(title);
+        blankFragment.show(getSupportFragmentManager(), BLANK_FRAGMENT_TAG);
+    }
+    public void loadFragment(View view, String title, List<String> list) {
+        BlankFragment blankFragment = new BlankFragment();
+        blankFragment.setList(list);
+
+        blankFragment.setTitle(title);
+        blankFragment.show(getSupportFragmentManager(), BLANK_FRAGMENT_TAG);
+    }
+    */
 }

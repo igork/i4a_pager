@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">i4a pager</string>
-    <string name="instructions"> </string>
+    <string name="instructions">Igor for Andy</string>
+    <string name="hello_blank_fragment">hello blank fragment</string>
     <string-array name="desserts">
         <item>Cupcake</item>
         <item>Donut</item>

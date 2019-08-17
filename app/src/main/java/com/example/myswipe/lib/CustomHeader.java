@@ -1,6 +1,6 @@
 package com.example.myswipe.lib;
 
-public enum CustomizedHeader {
+public enum CustomHeader {
 
     latitude("latitude"),
     longitude("longitude"),
@@ -8,7 +8,7 @@ public enum CustomizedHeader {
 
     private String name;
 
-    CustomizedHeader(String name){
+    CustomHeader(String name){
         this.name = name;
     }
     public String getName(){

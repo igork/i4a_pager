@@ -10,6 +10,8 @@ public class CustomizedProperties extends Properties {
 
     Enum baseEnum;
 
+    final String separator = ": ";
+
     //public CustomizedProperties(enum baseEnum){
     //    this.baseEnum = baseEnum;
     //}
@@ -19,11 +21,12 @@ public class CustomizedProperties extends Properties {
     }
 
     public CustomizedProperties(Enum baseEnum){
+
         this.baseEnum = baseEnum;
     }
 
     /*
-    public void add(CustomizedHeader header,String value){
+    public void add(CustomHeader header,String value){
         if (value!=null && !value.isEmpty())
             put(header.getName(),value);
     }
@@ -41,11 +44,133 @@ public class CustomizedProperties extends Properties {
             put(header.name(),value);
     }
 
+    public void add(Enum header,CustomizedProperties value){
+
+        /*
+
+         */
+        if (value!=null && !value.isEmpty())
+            put(header.name(),value);
+
+    }
+
+    @Override
+    public String getProperty(String key) {
+
+        //return super.getProperty(key);
+        Object obj = super.get(key);
+
+        if (obj instanceof String){
+            return (String)obj;
+        }
+        if (obj instanceof CustomizedProperties){
+            return ((CustomizedProperties)obj).toString();
+        }
+        return null;
+    }
+
+    @Override
+    public Object get(Object key) {
+
+        //return super.get(key);
+
+        if (key!=null && key instanceof String) {
+
+            Object obj = super.get(key);
+
+            /*
+            if (obj instanceof String) {
+                return (String) obj;
+            }
+            if (obj instanceof CustomizedProperties) {
+                return ((CustomizedProperties) obj);
+            }
+            */
+            return obj;
+        }
+        return null;
+    }
+
+
+    @Override
+    public int size(){
+        return super.size();
+    }
+
+    @Override
+    public Set<Object> keySet(){
+        return super.keySet();
+
+    }
+
+
+    @Override
+    public String toString(){
+        return toString("");
+    }
+
+    public String toString(String prefix){
+        String result = "";
+
+        //for(String name:sortedNames()){
+        //    result += prefix + name + separator + getProperty(name) + "\n";
+       // }
+
+        for(String name:sortedNames()){
+
+            Object obj = get(name);
+
+            if (obj instanceof String){
+                result += prefix + name + separator + (String)obj + "\n";
+            }
+            if (obj instanceof CustomizedProperties){
+                result += ((CustomizedProperties)obj).toString(name + separator);
+            }
+
+
+        }
+
+        //java8    api24
+        //List<String> personsSorted = set.stream().collect(Collectors.toCollection());
+
+        //for( String name:stringPropertyNames()){
+        //   result+= name + ": " + getProperty(name) + "\n";
+        //}
+        return result;
+    }
+
+    public List<String> sortedNames(){
+        Set<String> set = stringPropertyNames();
+        List<String> sorted = new ArrayList<>();
+        sorted.addAll(set);
+        Collections.sort(sorted);
+        return sorted;
+    }
+
+    /*
     public String toString(){
         String result = "";
 
+        for(String name:sortedNames()){
+            result += name + separator + getProperty(name) + "\n";
+        }
+
+        //java8    api24
+        //List<String> personsSorted = set.stream().collect(Collectors.toCollection());
+
+        //for( String name:stringPropertyNames()){
+         //   result+= name + ": " + getProperty(name) + "\n";
+        //}
+        return result;
+    }
+    */
+
+    public String[] getStringValues(){
+        String[] result = new String[this.size()];
+
+
         /*
-        for( CustomizedHeader header: CustomizedHeader.values()){
+        for( CustomHeader header: CustomHeader.values()){
 
             result+= header.getName() + ": " + getProperty(header.getName());
 
@@ -56,15 +181,40 @@ public class CustomizedProperties extends Properties {
         sorted.addAll(set);
         Collections.sort(sorted);
 
-        for( String name:sorted){
-            result+= name + ": " + getProperty(name) + "\n";
+        for(int i=0; i<sorted.size(); i++){
+            result[i] = getProperty(sorted.get(i));
         }
 
         //java8    api24
         //List<String> personsSorted = set.stream().collect(Collectors.toCollection());
 
         //for( String name:stringPropertyNames()){
-         //   result+= name + ": " + getProperty(name) + "\n";
+        //   result+= name + ": " + getProperty(name) + "\n";
+        //}
+        return result;
+    }
+
+    public Object[] getObjectValues(){
+        Object[] result = new Object[this.size()];
+
+
+        /*
+        for( CustomHeader header: CustomHeader.values()){
+
+            result+= header.getName() + ": " + getProperty(header.getName());
+
+        }
+        */
+        List<String> sorted = sortedNames();
+        for(int i=0; i<sorted.size(); i++){
+            result[i] = get(sorted.get(i));
+        }
+
+        //java8    api24
+        //List<String> personsSorted = set.stream().collect(Collectors.toCollection());
+
+        //for( String name:stringPropertyNames()){
+        //   result+= name + ": " + getProperty(name) + "\n";
         //}
         return result;
     }
@@ -79,8 +229,8 @@ public class CustomizedProperties extends Properties {
         System.out.println("ddddddddddd");
 
         CustomizedProperties prop = new CustomizedProperties();
-        prop.add(CustomizedHeader.address,"address");
-        prop.add(CustomizedHeader.latitude,"latti");
+        prop.add(CustomHeader.address,"address");
+        prop.add(CustomHeader.latitude,"latti");
 
         System.out.println("ddddddddddd" + prop.toString());
 

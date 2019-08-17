@@ -1,7 +1,6 @@
 package com.example.myswipe.lib;
 
 import android.app.Activity;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +8,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import android.location.Location;
@@ -24,6 +24,7 @@ public class WebService {
         CustomizedProperties header;
         String apiUrl;
 
+        CustomizedProperties responseProps = new CustomizedProperties();
 
         private static final String TAG = WebService.class.getName();
 
@@ -35,7 +36,8 @@ public class WebService {
             XServerAdmin,
             ServerIP,
             RemoteIP,
-            TimeStamp
+            TimeStamp,
+            error
         };
 
         public WebService(Activity activity, String apiUrl, Location location){
@@ -63,7 +65,7 @@ public class WebService {
             String utn = DeviceService.getUTN(activity);
 
             String log = "adnroid=" + androidId + " uni=" + uni + " utn=" + utn;
-            Log.i(TAG,log);
+            Log.log(TAG,log);
 
             myURLConnection.setRequestProperty("androidId",androidId);
             myURLConnection.setRequestProperty("uui",uni);
@@ -80,9 +82,9 @@ public class WebService {
             }
             */
             if (location!=null) {
-                myURLConnection.setRequestProperty(CustomizedHeader.latitude.getName(), "" + location.getLatitude());
-                myURLConnection.setRequestProperty(CustomizedHeader.longitude.getName(), "" + location.getLongitude());
-                myURLConnection.setRequestProperty(CustomizedHeader.address.getName(), "" + location.getProvider());
+                myURLConnection.setRequestProperty(CustomHeader.latitude.getName(), "" + location.getLatitude());
+                myURLConnection.setRequestProperty(CustomHeader.longitude.getName(), "" + location.getLongitude());
+                myURLConnection.setRequestProperty(CustomHeader.address.getName(), "" + location.getProvider());
             }
 
             //myURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -120,11 +122,12 @@ public class WebService {
 
             StringBuffer response = null;
             String output = null;
+            String error = null;
 
             try {
 
                 URL url = new URL(apiUrl);
-                Log.i(TAG, apiUrl);
+                Log.log(TAG, apiUrl);
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(15000);
@@ -135,7 +138,7 @@ public class WebService {
 
                 int responseCode = conn.getResponseCode();
 
-                Log.i(TAG, "" + responseCode);
+                Log.log(TAG, "" + responseCode);
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     // Reading response from input Stream
                     BufferedReader in = new BufferedReader(
@@ -149,9 +152,17 @@ public class WebService {
                     }
                     in.close();
                 }
+            } catch (SocketTimeoutException et){
+
+                error = "Timeout: " + et.getMessage();
+                Log.log(error);
+
             } catch(Exception e){
+
                 e.printStackTrace();
-                Log.i(TAG,e.getMessage());
+                error = "Exception: " + e.getMessage();
+                Log.log(error);
+
             }
 
             if (response!=null) {
@@ -159,13 +170,18 @@ public class WebService {
                 //Call ServerData() method to getResponse webservice and store result in response
                 //  response = service.ServerData(syncCall, postDataParams);
 
-                Log.i(TAG, response.toString());
+                Log.log(response.toString());
 
                 //output = parseResponse(output);
-                output = parseResponseProp(response.toString()).toString();
-
-                Log.i(TAG, output);
+                responseProps = parseResponseProp(response.toString());
             }
+
+            if (error!=null) {
+                responseProps.add(responseInfo.error, error);
+            }
+
+            output = responseProps.toString();
+            Log.log(output);
 
             /*
             try {
@@ -187,6 +203,14 @@ public class WebService {
             return output;
         }
 
+        public CustomizedProperties getResponseProps(){
+            return responseProps;
+        }
+
+        public Object[] parseResponseArray(String resp){
+            return null;
+        }
+
         public CustomizedProperties parseResponseProp(String resp){
 
             //String result = "API:" + syncCall + "\n";
@@ -201,9 +225,9 @@ public class WebService {
                 req.add(responseInfo.XServerName,headers.getString("X-Server-Name"));
                 req.add(responseInfo.XServerAdmin,headers.getString("X-Server-Admin"));
 
-                //result += getValue(headers,CustomizedHeader.latitude);
-                //result += getValue(headers,CustomizedHeader.longitude);
-                //result += getValue(headers,CustomizedHeader.address);
+                //result += getValue(headers,CustomHeader.latitude);
+                //result += getValue(headers,CustomHeader.longitude);
+                //result += getValue(headers,CustomHeader.address);
 
                 req.add(responseInfo.ServerIP,getLocation( (String)obj.get("server_ipecho")));
                 req.add(responseInfo.RemoteIP,getLocation( (String)obj.get("remote_ip")));
@@ -225,7 +249,7 @@ public class WebService {
             return value;
         }
 
-        private static String getValue(JSONObject headers, CustomizedHeader header){
+        private static String getValue(JSONObject headers, CustomHeader header){
             String value = null;
             try {
                 value = headers.getString(header.getName());
@@ -253,7 +277,7 @@ public class WebService {
                         result += ", " + (String) obj.get("region_name");
 
                     } catch (Exception e) {
-                        Log.d(TAG, "Parsing exeption"); // e.printStackTrace());
+                        Log.log(TAG, "Parsing exeption"); // e.printStackTrace());
                     }
                 }
             }
@@ -267,7 +291,7 @@ public class WebService {
             try {
 
                 url = new URL(path);
-                Log.i(TAG, "Server: " + path);
+                Log.log(TAG, "Server: " + path);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(15000);
                 conn.setConnectTimeout(15000);
@@ -275,7 +299,7 @@ public class WebService {
 
                 int responseCode = conn.getResponseCode();
 
-                Log.i(TAG, "Response code: " + responseCode);
+                Log.log(TAG, "Response code: " + responseCode);
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     // Reading response from input Stream
                     BufferedReader in = new BufferedReader(
@@ -296,7 +320,7 @@ public class WebService {
             }
 
             String result = response!=null?response.toString():null;
-            Log.i(TAG, "Response: " + result);
+            Log.log(TAG, "Response: " + result);
 
             return result;
         }
