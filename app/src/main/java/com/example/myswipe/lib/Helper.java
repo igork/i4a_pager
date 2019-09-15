@@ -38,10 +38,9 @@ passing a local context to the singleton's getInstance().
 public class Helper {
 
     private static Helper instance;
-    private final Context mContext;
 
     private Helper(@NonNull Context context) {
-        mContext = context.getApplicationContext();
+        Context mContext = context.getApplicationContext();
     }
 
     public static Helper getInstance(@NonNull Context context) {

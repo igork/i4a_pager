@@ -3,11 +3,14 @@ package com.example.myswipe;
 //UTN
 //This solution needs to request for android.permission.READ_PHONE_STATE
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
 import android.content.Context;
 
@@ -19,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 //import android.util.Log;
@@ -41,7 +45,7 @@ public class DeviceService {
         OS,
         network,
         model
-    };
+    }
 
 
     // https://medium.com/@ssaurel/how-to-retrieve-an-unique-id-to-identify-android-devices-6f99fd5369eb
@@ -50,7 +54,7 @@ public class DeviceService {
     //This solution needs to request for android.permission.READ_PHONE_STATE
     // <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    public synchronized static String getUTN(Context context){
+    public synchronized static String getUTN(Context context) {
 
         try {
             TelephonyManager telephonyManager;
@@ -60,15 +64,34 @@ public class DeviceService {
 
             // getDeviceId() returns the unique device ID.
             // For example,the IMEI for GSM and the MEID or ESN for CDMA phones.
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return null;
+            }
             String deviceId = telephonyManager.getDeviceId();
 
             //getSubscriberId() returns the unique subscriber ID,
             //For example, the IMSI for a GSM phone.
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return null;
+            }
             String subscriberId = telephonyManager.getSubscriberId();
 
             return deviceId + " - " + subscriberId;
-        } catch (SecurityException se) {
-            se.printStackTrace();
+
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -89,9 +112,8 @@ public class DeviceService {
         //String androidId = Settings.Secure.getString(getContentResolver(),
         //       Settings.Secure.ANDROID_ID);
 
-        String androidId = Secure.getString(context.getContentResolver(),
+        return  Secure.getString(context.getContentResolver(),
                 Secure.ANDROID_ID);
-        return androidId;
     }
 
     //get UUI
@@ -108,7 +130,7 @@ public class DeviceService {
                 uniqueID = UUID.randomUUID().toString();
                 Editor editor = sharedPrefs.edit();
                 editor.putString(PREF_UNIQUE_ID, uniqueID);
-                editor.commit();
+                editor.apply(); // //editor.commit(); - immideatelly
             }
         }
 
@@ -135,8 +157,6 @@ public class DeviceService {
                     try {
                         fieldValue = field.getInt(new Object());
                     } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     } catch (NullPointerException e) {
                         e.printStackTrace();
@@ -293,7 +313,7 @@ public class DeviceService {
     //<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     public static String networkConnection(Context context, Activity activity) {
         String connected = "no network";
-        ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if ((connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED) &&
                 (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED)) {

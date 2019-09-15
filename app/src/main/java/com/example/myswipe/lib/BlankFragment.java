@@ -27,7 +27,6 @@ https://stackoverflow.com/questions/45355531/android-listview-inside-dialog
 
 public class BlankFragment extends DialogFragment {
 
-    private ListView    listView;
     private TextView    textView;
 
     private String          text;
@@ -69,7 +68,7 @@ public class BlankFragment extends DialogFragment {
 
         textView = view.findViewById(R.id.f_blank_title);
 
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
 
         //add as text
         if (text != null && !text.isEmpty()) {
@@ -83,7 +82,7 @@ public class BlankFragment extends DialogFragment {
         if (!strings.isEmpty()){
 
             try {
-                listView = view.findViewById(R.id.f_blank_list);
+                ListView listView = view.findViewById(R.id.f_blank_list);
                 ArrayAdapter<String> arrayAdapter
                         = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, strings);
                 listView.setAdapter(arrayAdapter);
@@ -113,14 +112,14 @@ public class BlankFragment extends DialogFragment {
         context = (FragmentActivity) activity;
         super.onAttach(activity);
 
-        FragmentManager fm2 = ((AppCompatActivity) context).getSupportFragmentManager();
+        FragmentManager fm2 = context.getSupportFragmentManager();
     }
     //FragmentManager fm = context.getSupportFragmentManager();
     public void loadFragment(View view, String title, String text) {
         //BlankFragment blankFragment = new BlankFragment();
 
 
-        FragmentManager fm2 = ((AppCompatActivity) context).getSupportFragmentManager();
+        FragmentManager fm2 = context.getSupportFragmentManager();
         FragmentManager fm = context.getSupportFragmentManager();
 
         setText(text);

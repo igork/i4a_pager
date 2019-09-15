@@ -67,7 +67,7 @@ public class CustomProperties extends Properties {
             return (String)obj;
         }
         if (obj instanceof CustomProperties){
-            return ((CustomProperties)obj).toString();
+            return obj.toString();
         }
         return null;
     }
@@ -78,9 +78,6 @@ public class CustomProperties extends Properties {
         //return super.get(key);
 
         if (key instanceof String) {
-
-            Object obj = super.get(key);
-
             /*
             if (obj instanceof String) {
                 return (String) obj;
@@ -89,7 +86,7 @@ public class CustomProperties extends Properties {
                 return ((CustomProperties) obj);
             }
             */
-            return obj;
+            return super.get(key);
         }
         return null;
     }

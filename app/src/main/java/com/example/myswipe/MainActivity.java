@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         //get an inflater to be used to create single pages
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         //Reference ViewPager defined in activity
-        vp = (ViewPager) findViewById(R.id.viewPager);
+        vp = findViewById(R.id.viewPager);
         //set the adapter that will create the individual pages
         adapter = new MyPagesAdapter();
         vp.setOffscreenPageLimit(adapter.getCount());
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
             View page = inflater.inflate(R.layout.page, null);
 
             //((TextView)page.findViewById(R.id.textMessage)).setText(getPageData(position)); //pageData[position]);
-            TextView tv = (TextView) page.findViewById(R.id.textMessage);
+            TextView tv = page.findViewById(R.id.textMessage);
 
             Log.log("position: " + position);
 
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case 3:
-                    tv.setGravity(Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL | Gravity.LEFT);
+                    tv.setGravity(Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL | Gravity.START);
                     //https://alvinalexander.com/android/how-to-set-font-size-style-textview-programmatically
                     tv.setTextAppearance(MainActivity.this, R.style.fontForReport);
                     showReport(MainActivity.this,tv);
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
             //}
 
             //Add the page to the front of the queue
-            ((ViewPager) container).addView(page, 0);
+            container.addView(page, 0);
             return page;
         }
 
@@ -198,13 +198,12 @@ public class MainActivity extends AppCompatActivity {
         public boolean isViewFromObject(View arg0, Object arg1) {
             //See if object from instantiateItem is related to the given view
             //required by API
-            return arg0 == (View) arg1;
+            return arg0 == arg1;
         }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            ((ViewPager) container).removeView((View) object);
-            object = null;
+            container.removeView((View) object);
         }
 
         //simple way to reinstatiete all views if
@@ -321,8 +320,7 @@ public class MainActivity extends AppCompatActivity {
     public static Drawable LoadImageFromWebOperations(String url) {
         try {
             InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, "src name");
-            return d;
+            return Drawable.createFromStream(is, "src name");
         } catch (Exception e) {
             return null;
         }
@@ -371,7 +369,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(Build.VERSION.SDK_INT > 11) {
             //invalidateOptionsMenu();
             if (isTimerOn) {
                 menu.findItem(R.id.timeroff).setVisible(false);
@@ -380,7 +377,6 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.timeroff).setVisible(true);
                 menu.findItem(R.id.timeron).setVisible(false);
             }
-        }
 
         //menu.getItem(100).setEnabled(false);
         //menu.getItem(200).setEnabled(false);
@@ -533,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
                 CustomProperties props = ws.getResponseProps();
 
                 if( props!=null ) {
-                    ArrayAdapter adapter = new ArrayAdapter<String>(activity,
+                    ArrayAdapter adapter = new ArrayAdapter<>(activity,
                             R.layout.activity_listview,
                             props.getStringValues());//mobileArray);
 
@@ -742,7 +738,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
-        String response = null;
+        String response;
         try {
             response = ws.getResponse();
         } catch (Exception e) {
@@ -812,7 +808,7 @@ public class MainActivity extends AppCompatActivity {
     }
 */
     public ListView showList4(final AppCompatActivity activity,View page){
-        ListView listView = (ListView) page.findViewById(R.id.mobile_list);
+        ListView listView = page.findViewById(R.id.mobile_list);
 
         ReportService ws = new ReportService(activity,deviceInfoProps);
         //String per = ws.getResponse();

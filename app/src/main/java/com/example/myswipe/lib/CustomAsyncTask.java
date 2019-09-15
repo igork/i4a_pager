@@ -147,7 +147,7 @@ public class CustomAsyncTask extends AsyncTask {
                 if( ws instanceof ReportService){
                     adapter = new CustomAdapter2(activity/*getApplicationContext()*/,((ReportService) ws).toArrayList(props),ws.getHeaders());
                 } else {
-                    adapter = new ArrayAdapter<String>(activity,
+                    adapter = new ArrayAdapter<>(activity,
                             R.layout.activity_listview,
                             props.getStringValues());//mobileArray);
                 }
@@ -204,7 +204,7 @@ public class CustomAsyncTask extends AsyncTask {
         }
     }
 
-    public void lazyCall(Object tmp) {
+    public void lazyCall(CustomProperties tmp) {
         //TODO: everything into cache
 
         String title = "" + tmp;
@@ -218,9 +218,9 @@ public class CustomAsyncTask extends AsyncTask {
 
         if (tmp instanceof CustomProperties){
 
-            String recordId = "" + ((CustomProperties)tmp).get("id");
+            String recordId = "" + (tmp).get("id");
             title = "id: " + recordId;
-            String headers = "" + ((CustomProperties)tmp).get("headers");
+            String headers = "" + (tmp).get("headers");
 
             //show pretty json
 
@@ -271,7 +271,7 @@ public class CustomAsyncTask extends AsyncTask {
         }
         */
     public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
-        String response = null;
+        String response;
         try {
             response = ws.getResponse();
         } catch (Exception e) {

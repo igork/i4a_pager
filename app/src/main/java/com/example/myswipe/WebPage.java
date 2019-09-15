@@ -11,7 +11,7 @@ public class WebPage {
         //WebView webView = (WebView) activity.findViewById(R.id.webview);
 
         WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        //webSettings.setJavaScriptEnabled(true);
 
         webView.loadUrl(url);
 

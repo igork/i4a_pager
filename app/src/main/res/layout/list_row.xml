@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
-        android:textSize="17dp" />
+        android:textSize="17sp" />
     <TextView
         android:id="@+id/designation"
         android:layout_width="wrap_content"
@@ -17,14 +17,14 @@
         android:layout_below="@id/name"
         android:layout_marginTop="7dp"
         android:textColor="#343434"
-        android:textSize="14dp" />
+        android:textSize="14sp" />
     <TextView
         android:id="@+id/location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/designation"
         android:layout_alignBottom="@+id/designation"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:textColor="#343434"
-        android:textSize="14dp" />
+        android:textSize="14sp" />
 </RelativeLayout>

@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class RecordService extends WebService {
 
@@ -19,7 +20,7 @@ public class RecordService extends WebService {
         c,
         d,
         e
-    };
+    }
 
     //{
     // "data":[{"name":"igork1","number":1},{"name":"igork2","number":2},{"name":"igork3","number":3}],
@@ -71,7 +72,7 @@ public class RecordService extends WebService {
 
                 // ...
                 //result.put("" + (i + 1) + ".", "  ip:" + ip + "  time:" + time);
-                result.put(String.format ("%02d", i+1),"ip:" + ip + " time:" + time + " id:" + id);
+                result.put(String.format(Locale.getDefault(),"%02d", i+1),"ip:" + ip + " time:" + time + " id:" + id);
 
                 //java8
                 // list.f.forEach(arrayElement -> System.out.println(arrayElement.get("a")));
@@ -118,7 +119,7 @@ public class RecordService extends WebService {
                 element.add(item.id,"" +id);
                 element.add(item.time,time);
                 element.add(item.headers,headers);
-                result.put(String.format ("%02d", i+1),element);
+                result.put(String.format (Locale.getDefault(),"%02d", i+1),element);
 
                 //java8
                 // list.f.forEach(arrayElement -> System.out.println(arrayElement.get("a")));
@@ -143,7 +144,7 @@ public class RecordService extends WebService {
         //reverse parsing
         for (int i = 0; i < source.size(); ++i) {
 
-            Object var = source.get(String.format ("%02d", i+1));
+            Object var = source.get(String.format (Locale.getDefault(),"%02d", i+1));
             if (var!=null && var instanceof CustomProperties){
                 result.add((CustomProperties)var);
             }

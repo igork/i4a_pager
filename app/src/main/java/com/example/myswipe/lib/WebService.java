@@ -38,9 +38,9 @@ public class WebService {
             RemoteIP,
             TimeStamp,
             error
-        };
+        }
 
-        public WebService(Activity activity, String apiUrl, Location location){
+    public WebService(Activity activity, String apiUrl, Location location){
 
             this.activity = activity;
             this.apiUrl = apiUrl;
@@ -308,8 +308,8 @@ public class WebService {
                     try {
                         JSONObject obj = new JSONObject(response);
 
-                        result += "   " + (String) obj.get("city");
-                        result += ", " + (String) obj.get("region_name");
+                        result += "   " + obj.get("city");
+                        result += ", " + obj.get("region_name");
 
                     } catch (Exception e) {
                         Log.log(TAG, "Parsing exeption"); // e.printStackTrace());

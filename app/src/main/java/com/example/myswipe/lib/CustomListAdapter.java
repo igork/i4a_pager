@@ -40,11 +40,7 @@ public class CustomListAdapter extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
 
-        if (listData.get(position).value==null) {
-            return false;
-        } else {
-            return true;
-        }
+        return listData.get(position).value != null;
     }
     /*
         public View getView(int position, View v, ViewGroup vg) {
@@ -59,9 +55,9 @@ public class CustomListAdapter extends BaseAdapter {
         if (v == null) {
             v = layoutInflater.inflate(R.layout.list_row, null);
             holder = new ViewHolder();
-            holder.uName = (TextView) v.findViewById(R.id.name);
-            holder.uDesignation = (TextView) v.findViewById(R.id.designation);
-            holder.uLocation = (TextView) v.findViewById(R.id.location);
+            holder.uName = v.findViewById(R.id.name);
+            holder.uDesignation = v.findViewById(R.id.designation);
+            holder.uLocation = v.findViewById(R.id.location);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag();

@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class ReportService extends WebService {
 
@@ -20,7 +21,7 @@ public class ReportService extends WebService {
         c,
         d,
         e
-    };
+    }
 
     //{
     // "data":[{"name":"igork1","number":1},{"name":"igork2","number":2},{"name":"igork3","number":3}],
@@ -66,7 +67,7 @@ public class ReportService extends WebService {
 
                 // ...
                 //result.put("" + (i + 1) + ".", "  ip:" + ip + "  time:" + time);
-                result.put(String.format ("%02d", i+1),"ip:" + ip + " time:" + time + " id:" + id);
+                result.put(String.format (Locale.getDefault(),"%02d", i+1),"ip:" + ip + " time:" + time + " id:" + id);
 
                 //java8
                 // list.f.forEach(arrayElement -> System.out.println(arrayElement.get("a")));
@@ -122,7 +123,7 @@ public class ReportService extends WebService {
                 //element.add(item.headers,"headers value");
 
                 //
-                result.put(String.format ("%02d", i+1),element);
+                result.put(String.format (Locale.getDefault(),"%02d", i+1),element);
 
                 //java8
                 // list.f.forEach(arrayElement -> System.out.println(arrayElement.get("a")));
@@ -179,14 +180,14 @@ public class ReportService extends WebService {
         String latitude = CustomProperties.extractValue(headers,DeviceService.deviceInfo.latitude.toString());
         String longitude = CustomProperties.extractValue(headers,DeviceService.deviceInfo.longitude.toString());
 
-        return new Pair<String,String>(latitude,longitude);
+        return new Pair<>(latitude, longitude);
     }
 
 
 
     public ArrayList<CustomProperties> toArrayList(CustomProperties source) {
 
-        ArrayList<CustomProperties> result = new ArrayList<CustomProperties>();
+        ArrayList<CustomProperties> result = new ArrayList<>();
 
         if (source==null || source.isEmpty()) {
             return result;
@@ -195,7 +196,7 @@ public class ReportService extends WebService {
         //reverse parsing
         for (int i = 0; i < source.size(); ++i) {
 
-            Object var = source.get(String.format ("%02d", i+1));
+            Object var = source.get(String.format (Locale.getDefault(),"%02d", i+1));
             if (var!=null && var instanceof CustomProperties){
                 result.add((CustomProperties)var);
             }

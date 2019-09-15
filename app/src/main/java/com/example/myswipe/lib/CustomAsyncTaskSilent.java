@@ -89,7 +89,7 @@ public class CustomAsyncTaskSilent extends AsyncTask {
             CustomProperties props = ws.getResponseProps();
 
             if( props!=null ) {
-                ArrayAdapter adapter = new ArrayAdapter<String>(activity,
+                ArrayAdapter adapter = new ArrayAdapter<>(activity,
                         R.layout.activity_listview,
                         props.getStringValues());//mobileArray);
 
@@ -120,7 +120,7 @@ public class CustomAsyncTaskSilent extends AsyncTask {
 
     }
     public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
-        String response = null;
+        String response;
         try {
             response = ws.getResponse();
         } catch (Exception e) {

@@ -49,11 +49,7 @@ public class CustomAdapter2 extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
 
-        if (listData.get(position).get("headers")==null) {
-            return false;
-        } else {
-            return true;
-        }
+        return listData.get(position).get("headers") != null;
         //return true;
     }
     /*
@@ -101,9 +97,9 @@ public class CustomAdapter2 extends BaseAdapter {
         if (v == null) {
             v = layoutInflater.inflate(R.layout.list_row, null);
             holder = new CustomAdapter2.ViewHolder();
-            holder.uName = (TextView) v.findViewById(R.id.name);
-            holder.uDesignation = (TextView) v.findViewById(R.id.designation);
-            holder.uLocation = (TextView) v.findViewById(R.id.location);
+            holder.uName = v.findViewById(R.id.name);
+            holder.uDesignation = v.findViewById(R.id.designation);
+            holder.uLocation = v.findViewById(R.id.location);
             v.setTag(holder);
         } else {
             holder = (CustomAdapter2.ViewHolder) v.getTag();

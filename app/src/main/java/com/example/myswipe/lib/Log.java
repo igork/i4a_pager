@@ -17,7 +17,7 @@ public class Log {
     //singleton for keeping log in file
     static private Activity activity;
     public void init(Activity activity){
-        this.activity = activity;
+        Log.activity = activity;
     }
     static private void writeLog(String tag, String string){
         writeLog(tag + ": " + string);
