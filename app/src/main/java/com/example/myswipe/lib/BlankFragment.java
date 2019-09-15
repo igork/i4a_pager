@@ -52,6 +52,10 @@ public class BlankFragment extends DialogFragment {
         this.list = list;
     }
 
+    public TextView getTextView(){
+        return textView;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -62,6 +66,8 @@ public class BlankFragment extends DialogFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        textView = view.findViewById(R.id.f_blank_title);
 
         List<String> strings = new ArrayList<String>();
 
@@ -89,7 +95,7 @@ public class BlankFragment extends DialogFragment {
 
         //add title
         try {
-            textView = view.findViewById(R.id.f_blank_title);
+            //textView = view.findViewById(R.id.f_blank_title);
             textView.setText(title);
         } catch (Exception e){
             e.printStackTrace();

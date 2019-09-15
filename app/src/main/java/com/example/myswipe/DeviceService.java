@@ -12,17 +12,18 @@ import android.telephony.TelephonyManager;
 import android.content.Context;
 
 //Secure
-import android.provider.Settings;
 import android.provider.Settings.Secure;
 
 //UUI
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 //import android.util.Log;
 
-import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.CustomProperties;
 import com.example.myswipe.lib.Log;
 import com.location.aravind.getlocation.GeoLocator;
 
@@ -178,9 +179,9 @@ public class DeviceService {
         return prop;
     }
     */
-    public static CustomizedProperties getInfo(Context context, Activity activity) {
+    public static CustomProperties getInfo(Context context, Activity activity) {
 
-        CustomizedProperties prop = new CustomizedProperties();
+        CustomProperties prop = new CustomProperties();
         String unknown = "unknown";
         Location location = new Location(unknown);
 
@@ -195,6 +196,8 @@ public class DeviceService {
             location.setLatitude(geoLocator.getLattitude());
             location.setLongitude(geoLocator.getLongitude());
 
+            adjustLocation(location);
+
             //update prop
             prop.clear();
             prop.add(deviceInfo.latitude, "" + location.getLatitude());
@@ -202,7 +205,24 @@ public class DeviceService {
             if (!location.getProvider().equalsIgnoreCase(unknown))
                 prop.add(deviceInfo.address, location.getProvider());
         } catch (Exception e) {
+            /*
             e.printStackTrace();
+            //DEBUG
+            location.setLatitude(15.15+Math.random()*0.5);
+            location.setLongitude(18.18+Math.random()*1.5);
+            location.setProvider("debug addr");
+
+            //update prop
+            prop.clear();
+            prop.add(deviceInfo.latitude, "" + location.getLatitude());
+            prop.add(deviceInfo.longitude, "" + location.getLongitude());
+            if (!location.getProvider().equalsIgnoreCase(unknown))
+                prop.add(deviceInfo.address, location.getProvider());
+                */
+
+        } finally {
+
+
         }
 
         try {
@@ -235,6 +255,39 @@ public class DeviceService {
         }
 
         return prop;
+    }
+
+    public static void adjustLocation(Location location){
+
+        class Loc{
+            public double lati;
+            public double longi;
+            public String addr;
+            public Loc( double lati, double longi, String addr){
+                this.lati = lati;
+                this.longi = longi;
+                this.addr = addr;
+            }
+            public boolean isCloseTo(Location location){
+                //TO DO: change to distance
+                return Math.abs(location.getLatitude() - this.lati) < 0.003 &&
+                       Math.abs(location.getLongitude() - this.longi) < 0.003;
+            }
+
+        }
+        Loc[] black = {
+                new Loc(37.2288315,-121.836275,"700 Colleen Dr, San Jose, CA 95123, USA")
+        };
+
+        for (int i=0; i<black.length; i++) {
+            if (black[i].isCloseTo(location)) {
+
+                location.setLatitude(black[i].lati);
+                location.setLongitude(black[i].longi);
+                location.setProvider(black[i].addr);
+
+            }
+        }
     }
 
     //<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

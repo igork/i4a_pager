@@ -2,12 +2,15 @@ package com.example.myswipe.lib;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.location.Location;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.example.myswipe.DeviceService;
 import com.example.myswipe.R;
 import com.example.myswipe.ReportService;
 
@@ -15,13 +18,21 @@ import java.util.ArrayList;
 
 public class CustomAdapter2 extends BaseAdapter {
 
-    private ArrayList<CustomizedProperties> listData;
+    private ArrayList<CustomProperties> listData;
     private LayoutInflater layoutInflater;
+    CustomProperties deviceInfo;
 
-    public CustomAdapter2(Context aContext, ArrayList<CustomizedProperties> listData) {
+    public CustomAdapter2(Context aContext, ArrayList<CustomProperties> listData) {
         this.listData = listData;
         layoutInflater = LayoutInflater.from(aContext);
     }
+
+    public CustomAdapter2(Context aContext, ArrayList<CustomProperties> listData, CustomProperties deviceInfo) {
+        this.listData = listData;
+        layoutInflater = LayoutInflater.from(aContext);
+        this.deviceInfo = deviceInfo;
+    }
+
     @Override
     public int getCount() {
         return listData.size();
@@ -38,14 +49,12 @@ public class CustomAdapter2 extends BaseAdapter {
     @Override
     public boolean isEnabled(int position) {
 
-        /*
-        if (listData.get(position).get("details")==null) {
+        if (listData.get(position).get("headers")==null) {
             return false;
         } else {
             return true;
         }
-        */
-        return true;
+        //return true;
     }
     /*
         public View getView(int position, View v, ViewGroup vg) {
@@ -107,16 +116,64 @@ public class CustomAdapter2 extends BaseAdapter {
         holder.uDesignation.setText((String)listData.get(position).get(""));
         holder.uLocation.setText((String)listData.get(position).get("ip"));
 
-        holder.uName.setTextColor(Color.BLACK);
-        holder.uDesignation.setTextColor(Color.BLUE);
-        holder.uLocation.setTextColor(Color.RED);
+        holder.uName.setTextColor(Color.BLACK);         //show time
+        holder.uDesignation.setTextColor(Color.BLUE);   //show location
+        holder.uLocation.setTextColor(Color.RED);       //show ip
 
         //holder.uName.setText(listData.get(position).getName());
         //holder.uDesignation.setText(listData.get(position).getDesignation());
         //holder.uLocation.setText(listData.get(position).getLocation());
+
+        String headers = (String)listData.get(position).get("headers");
+        int distance = (int)getDistanceBetweenTwoPoints(deviceInfo, headers);
+        if (distance > 5) {
+            holder.uDesignation.setText("" + distance);
+        } else {
+            if (distance > 0) {
+                holder.uDesignation.setText("same place");
+            } else {
+
+            }
+        }
+
         return v;
     }
+    private float getDistanceBetweenTwoPoints(CustomProperties device, String headers) {
 
+        try {
+            String currentLatitude = device.getProperty(DeviceService.deviceInfo.latitude.name());
+            String currentLongitude = device.getProperty(DeviceService.deviceInfo.longitude.name());
+
+            Pair<String, String> loc = ReportService.extractLatitude(headers);
+
+            String itemLatitude = loc.first;
+            String itemLongitude = loc.second;
+
+            return getDistanceBetweenTwoPoints(currentLatitude, currentLongitude, itemLatitude, itemLongitude);
+        } catch (Exception e){
+            //nothing
+        }
+        return (float)(-1.0);
+    }
+    private float getDistanceBetweenTwoPoints(String lat1,String lon1,String lat2,String lon2) {
+        double la1 = Double.parseDouble(lat1);
+        double lo1 = Double.parseDouble(lon1);
+        double la2 = Double.parseDouble(lat2);
+        double lo2 = Double.parseDouble(lon2);
+
+        return getDistanceBetweenTwoPoints(la1,lo2,la2,lo2);
+
+    }
+    private float getDistanceBetweenTwoPoints(double lat1,double lon1,double lat2,double lon2) {
+
+        float[] distance = new float[2];
+
+        //in meters
+        Location.distanceBetween( lat1, lon1,
+                lat2, lon2, distance);
+
+        return distance[0];
+    }
     static class ViewHolder {
         TextView uName;
         TextView uDesignation;

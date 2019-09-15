@@ -3,7 +3,6 @@ package com.example.myswipe.lib;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,13 +10,13 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.myswipe.MainActivity;
 import com.example.myswipe.R;
+import com.example.myswipe.RecordService;
 import com.example.myswipe.ReportService;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class CustomAsyncTask extends AsyncTask {
 
@@ -29,6 +28,7 @@ public class CustomAsyncTask extends AsyncTask {
 
     String output;
     WebService ws;
+    CustomProperties deviceInfo;
 
     private static final String TAG = CustomAsyncTask.class.getName();
 
@@ -92,7 +92,7 @@ public class CustomAsyncTask extends AsyncTask {
             tv.setText(output);
         }
         if (listView!=null) {
-            CustomizedProperties props = ws.getResponseProps();
+            CustomProperties props = ws.getResponseProps();
 
             if( props!=null) {
                     /*
@@ -120,7 +120,7 @@ public class CustomAsyncTask extends AsyncTask {
                     */
 
                     /*
-                    CustomizedProperties props
+                    CustomProperties props
                     convert to
                     ArrayList<ListItem> item
                     */
@@ -145,7 +145,7 @@ public class CustomAsyncTask extends AsyncTask {
 
                 //TODO: remove business logic from here
                 if( ws instanceof ReportService){
-                    adapter = new CustomAdapter2(activity/*getApplicationContext()*/,((ReportService) ws).toArrayList(props));
+                    adapter = new CustomAdapter2(activity/*getApplicationContext()*/,((ReportService) ws).toArrayList(props),ws.getHeaders());
                 } else {
                     adapter = new ArrayAdapter<String>(activity,
                             R.layout.activity_listview,
@@ -162,10 +162,31 @@ public class CustomAsyncTask extends AsyncTask {
 
                         Object tmp = adapterView.getItemAtPosition(position);
 
+                        if (tmp==null){
+                            return;
+                        }
+
                         //TODO: remove business logic from here
+                        //lazyCall(tmp);
+
+                        //directCall
                         String title;
-                        if (tmp instanceof CustomizedProperties){
-                            title = "id: " + ((CustomizedProperties)tmp).get("id");
+                        String text = "";
+                        if (tmp instanceof CustomProperties){
+                            title = "id: " + ((CustomProperties)tmp).get("id");
+
+                            String temp2 = (String)((CustomProperties)tmp).get("headers");
+                            if (temp2!=null) {
+
+                                try{
+                                    JSONObject jsonObject = (new JSONObject(temp2)).getJSONObject("");
+                                    text = jsonObject.toString(2);
+                                } catch (Exception e){
+                                    text = temp2;
+                                }
+
+                            }
+
                         } else {
                             title = "" + tmp;
                         }
@@ -173,7 +194,7 @@ public class CustomAsyncTask extends AsyncTask {
                         //TODO: get record info to text or list
 
                         if (tmp!=null) {
-                            new BlankFragment().loadFragment(activity, title, "");
+                            new BlankFragment().loadFragment(activity, title, text);
                         }
 
                     }
@@ -182,24 +203,73 @@ public class CustomAsyncTask extends AsyncTask {
             }
         }
     }
-/*
-    protected static void Log(String text) {
-        Log.i(TAG,text);
-        System.out.println(text);
-    }
 
-    public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
-        try {
-            String response = ws.getResponse();
-            Log("Response: " + response);
-            return response;
+    public void lazyCall(Object tmp) {
+        //TODO: everything into cache
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        String title = "" + tmp;
+        String text = "";
+
+        BlankFragment fragment = new BlankFragment();
+        ///FragmentManager fm = activity.getSupportFragmentManager();
+
+        //fragment.setText(text);
+        //fragment.setTitle(title);
+
+        if (tmp instanceof CustomProperties){
+
+            String recordId = "" + ((CustomProperties)tmp).get("id");
+            title = "id: " + recordId;
+            String headers = "" + ((CustomProperties)tmp).get("headers");
+
+            //show pretty json
+
+
+            text = "headers: " + headers;
+
+
+            if (recordId!=null && !recordId.isEmpty()) {
+
+                String path2 = RecordService.path + "?" + "id=" + recordId + "&headers=1";
+
+                //TODO: get record info into text
+                RecordService ws = new RecordService(activity, null,path2);
+                //String per = ws.getResponse();
+                //tv.setText(per);
+
+                TextView tv = fragment.getTextView();
+                CustomAsyncTaskSilent task = new CustomAsyncTaskSilent(activity, ws, tv);
+                task.execute();
+
+                //TO DO remove
+                //final String BLANK_FRAGMENT_TAG = "FRAGMENT_TAG";
+                //fragment.show(fm, BLANK_FRAGMENT_TAG);
+            }
+
+            //TODO: or into list
         }
-        return "No Response";
+
+        fragment.loadFragment(activity, title, text);
     }
-    */
+
+    /*
+        protected static void Log(String text) {
+            Log.i(TAG,text);
+            System.out.println(text);
+        }
+
+        public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
+            try {
+                String response = ws.getResponse();
+                Log("Response: " + response);
+                return response;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return "No Response";
+        }
+        */
     public synchronized String getWebServiceResponseData(Activity activity, WebService ws){
         String response = null;
         try {

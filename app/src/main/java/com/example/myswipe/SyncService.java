@@ -2,7 +2,7 @@ package com.example.myswipe;
 
 import android.app.Activity;
 
-import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.CustomProperties;
 import com.example.myswipe.lib.WebService;
 
 import org.json.JSONObject;
@@ -19,10 +19,10 @@ public class SyncService extends WebService {
         ServerIP,
         RemoteIP,
         TimeStamp
-    };
+    }
 
 
-    public SyncService(Activity activity, CustomizedProperties headers){
+    public SyncService(Activity activity, CustomProperties headers){
         super(activity,path,headers);
     }
 
@@ -46,9 +46,9 @@ public class SyncService extends WebService {
 
 
     @Override
-    public CustomizedProperties parseResponseProp(String resp){
+    public CustomProperties parseResponseProp(String resp){
 
-        CustomizedProperties req= new CustomizedProperties();
+        CustomProperties req= new CustomProperties();
         req.add(responseInfo.API,path);
 
         try {

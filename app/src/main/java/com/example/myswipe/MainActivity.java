@@ -3,13 +3,10 @@ package com.example.myswipe;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 
 import android.os.Build;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -25,33 +22,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.myswipe.lib.BlankFragment;
-import com.example.myswipe.lib.CustomAdapter2;
 import com.example.myswipe.lib.CustomAsyncTask;
-import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.CustomProperties;
 import com.example.myswipe.lib.Log;
 import com.example.myswipe.lib.WebService;
-import com.example.myswipe.lib.CustomListAdapter;
-import com.example.myswipe.lib.ListItem;
 
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class MainActivity extends AppCompatActivity {
     //String pageData[];            //Stores the text to swipe.
@@ -66,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private static CustomizedProperties deviceInfoProps = new CustomizedProperties();
+    private static CustomProperties deviceInfoProps = new CustomProperties();
 
-    //private CustomizedProperties reportProps = new CustomizedProperties();
+    //private CustomProperties reportProps = new CustomProperties();
 
     private static final String TAG = MainActivity.class.getName();
 
@@ -77,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //CustomizedProperties prop = DeviceService.getInfo(getApplicationContext(), MainActivity.this);
+        //CustomProperties prop = DeviceService.getInfo(getApplicationContext(), MainActivity.this);
 
         //get an inflater to be used to create single pages
         inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -226,27 +214,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private String formattedHtml(String string){
+        // Work around for API Versions lower than N, Html.fromHtml does not render list items correctly
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return string.replace("<ul>", "")
+                    .replace("</ul>", "")
+                    .replace("<li>", "<p>• ")
+                    .replace("</li>", "</p><br />");
+        } else {
+            return string;
+        }
+    }
     @NotNull
     public Spanned showAbout() {
         String about = "";
 
-        Map<String,String> link = new HashMap<String,String>() {
+        //about += "<ul style=\"list-style-type:circle;\">";
+
+        Map<String,String> link = new LinkedHashMap<String,String>() {
             {
-                put("site","http://igorkourski.000webhostapp.com");
-                put("github","http://github.com/igork");
-                put("bitbucket","http://bitbucket.org/igorkourski/");
-                put("php","http://igorkourski.000webhostapp.com/sandbox/one.php?ig=kr&kr=ig");
-                put("python","http://igoryk.pythonanywhere.com");
+                put("Synchronous request","http://igorkourski.000webhostapp.com/sandbox/one.php?ig=kr&kr=ig");
+                put("Asynchronous request","http://igorkourski.000webhostapp.com/sandbox/two.php?ig=kr&kr=ig");
+                put("Python","http://igoryk.pythonanywhere.com");
+                //put("Pubython","http://igoryk.pythonanywhere.com");
+                put("About","http://igorkourski.000webhostapp.com/About/");
+                put("Github","http://github.com/igork");
+                put("Bitbucket","http://bitbucket.org/igorkourski/");
             }
         };
 
-        for (String url: link.values()){
+        for (String key: link.keySet()){
 
-            about += "<a href=\"" + url + "\">" + url + "</a><br />";
+            about += "<li><a href=\"" + link.get(key) + "\">" + key + "</a></li>";
 
         }
+        //about += "</ul>";
 
-        return Html.fromHtml("<p>" + about + "</p>");//,Html.FROM_HTML_MODE_COMPACT);
+        return Html.fromHtml( formattedHtml("<p>" + about + "</p>"));//,Html.FROM_HTML_MODE_COMPACT);
     }
     public void test(TextView htmlTextView){
         String htmlString = "<img src='ic_launcher'><i>Welcome to<i> <b><a href='https://stackoverflow.com/'>Stack Overflow</a></b>";
@@ -401,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
     //static Activity activity;
 
 
-    public void showProgress(final Activity activity, TextView tv, CustomizedProperties deviceInfoProps) {
+    public void showProgress(final Activity activity, TextView tv, CustomProperties deviceInfoProps) {
 
         //btnSubmit = findViewById(R.id.btnSubmit);
         //btnSubmit.setOnClickListener(
@@ -525,7 +530,7 @@ public class MainActivity extends AppCompatActivity {
                 tv.setText(output);
             }
             if (listView!=null) {
-                CustomizedProperties props = ws.getResponseProps();
+                CustomProperties props = ws.getResponseProps();
 
                 if( props!=null ) {
                     ArrayAdapter adapter = new ArrayAdapter<String>(activity,
@@ -608,7 +613,7 @@ public class MainActivity extends AppCompatActivity {
                 tv.setText(output);
             }
             if (listView!=null) {
-                CustomizedProperties props = ws.getResponseProps();
+                CustomProperties props = ws.getResponseProps();
 
                 if( props!=null) {
 
@@ -662,7 +667,7 @@ public class MainActivity extends AppCompatActivity {
         public Activity activity;
         public TextView tv;
 
-        //public CustomizedProperties props;
+        //public CustomProperties props;
 
         public String output = "running";
 
@@ -671,7 +676,7 @@ public class MainActivity extends AppCompatActivity {
         public ProgressDialog progressDialog;
 
         /*
-        public GetServerData(Activity activity, TextView tv, String path, CustomizedProperties header) {
+        public GetServerData(Activity activity, TextView tv, String path, CustomProperties header) {
             this.activity = activity;
             this.tv = tv;
             this.path = path;
@@ -821,7 +826,7 @@ public class MainActivity extends AppCompatActivity {
 /*
     public ListView showList(View page){
 
-        CustomizedProperties reportProps = new CustomizedProperties();
+        CustomProperties reportProps = new CustomProperties();
 
         ListView listView = (ListView) page.findViewById(R.id.mobile_list);
 

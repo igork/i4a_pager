@@ -2,7 +2,7 @@ package com.example.myswipe;
 
 import android.app.Activity;
 
-import com.example.myswipe.lib.CustomizedProperties;
+import com.example.myswipe.lib.CustomProperties;
 import com.example.myswipe.lib.WebService;
 
 import org.json.JSONArray;
@@ -29,9 +29,13 @@ public class RecordService extends WebService {
     //      "Connection":"Keep-Alive","Proxy-Connection":"Keep-Alive",
     //      "HOST":"igorkourski.000webhostapp.com",
     //      "X-Forwarded-Proto":"http","X-Real-IP":"2601:646:9601:1868:75b8:7503:1642:e68e","X-Forwarded-For":"2601:646:9601:1868:75b8:7503:1642:e68e","X-Document-Root":"\/storage\/ssd4\/429\/8455429\/public_html","X-Server-Admin":"webmaster@000webhost.io","X-Server-Name":"igorkourski.000webhostapp.com","User-Agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64; rv:67.0) Gecko\/20100101 Firefox\/67.0","Accept":"text\/html,application\/xhtml+xml,application\/xml;q=0.9,*\/*;q=0.8","Accept-Language":"en-US,en;q=0.5","Accept-Encoding":"gzip, deflate","Upgrade-Insecure-Requests":"1"},"method":"GET","date_completed":"Sunday, June 16 19 07:12:45.000","server_addr":"2a02:4780:bad:24::397","remote_ip":"2601:646:9601:1868:75b8:7503:1642:e68e","server_ipecho":"153.92.0.23","elapsed_ms":5167,"params":{"ig":"kr","kr":"ig"},"id":207}
-    static final String path = "http://igorkourski.000webhostapp.com/sandbox/record.php";
+    static public String path = "http://igorkourski.000webhostapp.com/sandbox/record.php";
 
-    public RecordService(Activity activity, CustomizedProperties headers, String id){
+    public RecordService(Activity activity, CustomProperties headers, String path){
+
+
+        //String path2 = path + "?" + "id=" + id + "&headers=1";
+
 
         super(activity,path,headers);
 
@@ -50,9 +54,9 @@ public class RecordService extends WebService {
     // {"number":8,"id":"200","ip":"2a02:4780:bad:8:fced:1ff:fe08:105","time":"2019-06-08 00:00:15"},{"number":9,"id":"199","ip":"2a02:4780:bad:8:fced:1ff:fe08:105","time":"2019-06-07 00:00:13"},{"number":10,"id":"198","ip":"2a02:4780:bad:8:fced:1ff:fe08:105","time":"2019-06-06 00:00:18"}]}
 
     //@Override
-    public CustomizedProperties parseResponseProp0(String resp) {
+    public CustomProperties parseResponseProp0(String resp) {
 
-        CustomizedProperties result = new CustomizedProperties();
+        CustomProperties result = new CustomProperties();
 
         try {
             JSONObject obj = new JSONObject(resp);
@@ -85,13 +89,14 @@ public class RecordService extends WebService {
         number,
         ip,
         time,
-        id
+        id,
+        headers
     }
 
     @Override
-    public CustomizedProperties parseResponseProp(String resp) {
+    public CustomProperties parseResponseProp(String resp) {
 
-        CustomizedProperties result = new CustomizedProperties();
+        CustomProperties result = new CustomProperties();
 
         try {
             JSONObject obj = new JSONObject(resp);
@@ -103,14 +108,16 @@ public class RecordService extends WebService {
                 int id = rec.getInt("id");
                 String ip = rec.getString("ip");
                 String time = rec.getString("time");
+                String headers = rec.getString("headers");
 
                 // ...
                 //result.put("" + (i + 1) + ".", "  ip:" + ip + "  time:" + time);
-                CustomizedProperties element = new CustomizedProperties();
+                CustomProperties element = new CustomProperties();
                 //element.add(item.number,"" + number);
                 element.add(item.ip,ip);
                 element.add(item.id,"" +id);
                 element.add(item.time,time);
+                element.add(item.headers,headers);
                 result.put(String.format ("%02d", i+1),element);
 
                 //java8
@@ -125,9 +132,9 @@ public class RecordService extends WebService {
         return result;
     }
 
-    public ArrayList<CustomizedProperties> toArrayList(CustomizedProperties source) {
+    public ArrayList<CustomProperties> toArrayList(CustomProperties source) {
 
-        ArrayList<CustomizedProperties> result = new ArrayList<CustomizedProperties>();
+        ArrayList<CustomProperties> result = new ArrayList<CustomProperties>();
 
         if (source==null || source.isEmpty()) {
             return result;
@@ -137,8 +144,8 @@ public class RecordService extends WebService {
         for (int i = 0; i < source.size(); ++i) {
 
             Object var = source.get(String.format ("%02d", i+1));
-            if (var!=null && var instanceof CustomizedProperties){
-                result.add((CustomizedProperties)var);
+            if (var!=null && var instanceof CustomProperties){
+                result.add((CustomProperties)var);
             }
 
         }

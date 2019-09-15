@@ -6,21 +6,24 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-public class CustomizedProperties extends Properties {
+import android.support.annotation.NonNull;
+
+public class CustomProperties extends Properties {
 
     Enum baseEnum;
 
-    final String separator = ": ";
+    final static String separator = ": ";
+    final static String linefeed = "\n";
 
-    //public CustomizedProperties(enum baseEnum){
+    //public CustomProperties(enum baseEnum){
     //    this.baseEnum = baseEnum;
     //}
 
-    public CustomizedProperties(){
+    public CustomProperties(){
 
     }
 
-    public CustomizedProperties(Enum baseEnum){
+    public CustomProperties(Enum baseEnum){
 
         this.baseEnum = baseEnum;
     }
@@ -44,7 +47,7 @@ public class CustomizedProperties extends Properties {
             put(header.name(),value);
     }
 
-    public void add(Enum header,CustomizedProperties value){
+    public void add(Enum header, CustomProperties value){
 
         /*
 
@@ -63,8 +66,8 @@ public class CustomizedProperties extends Properties {
         if (obj instanceof String){
             return (String)obj;
         }
-        if (obj instanceof CustomizedProperties){
-            return ((CustomizedProperties)obj).toString();
+        if (obj instanceof CustomProperties){
+            return ((CustomProperties)obj).toString();
         }
         return null;
     }
@@ -74,7 +77,7 @@ public class CustomizedProperties extends Properties {
 
         //return super.get(key);
 
-        if (key!=null && key instanceof String) {
+        if (key instanceof String) {
 
             Object obj = super.get(key);
 
@@ -82,8 +85,8 @@ public class CustomizedProperties extends Properties {
             if (obj instanceof String) {
                 return (String) obj;
             }
-            if (obj instanceof CustomizedProperties) {
-                return ((CustomizedProperties) obj);
+            if (obj instanceof CustomProperties) {
+                return ((CustomProperties) obj);
             }
             */
             return obj;
@@ -98,6 +101,7 @@ public class CustomizedProperties extends Properties {
     }
 
     @Override
+    @NonNull
     public Set<Object> keySet(){
         return super.keySet();
 
@@ -108,6 +112,25 @@ public class CustomizedProperties extends Properties {
     public String toString(){
         return toString("");
     }
+
+    //reverse toString
+    public static String extractValue(String string, String substring){
+
+        String lookingFor  = substring + separator;
+        int index = string.indexOf(lookingFor);
+        if (index>=0){
+
+            String restString  = string.substring(index + lookingFor.length());
+            int second = restString.indexOf(linefeed);
+
+            return restString.substring(0,second);
+
+
+        }
+        return null;
+    }
+
+    //
 
     public String toString(String prefix){
         String result = "";
@@ -121,10 +144,10 @@ public class CustomizedProperties extends Properties {
             Object obj = get(name);
 
             if (obj instanceof String){
-                result += prefix + name + separator + (String)obj + "\n";
+                result += prefix + name + separator + obj + linefeed;
             }
-            if (obj instanceof CustomizedProperties){
-                result += ((CustomizedProperties)obj).toString(name + separator);
+            if (obj instanceof CustomProperties){
+                result += ((CustomProperties)obj).toString(name + separator);
             }
 
 
@@ -228,7 +251,7 @@ public class CustomizedProperties extends Properties {
     public static void main(String[] arg){
         System.out.println("ddddddddddd");
 
-        CustomizedProperties prop = new CustomizedProperties();
+        CustomProperties prop = new CustomProperties();
         prop.add(CustomHeader.address,"address");
         prop.add(CustomHeader.latitude,"latti");
 

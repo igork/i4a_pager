@@ -21,14 +21,14 @@ public class WebService {
 
         Activity activity;
         Location location;
-        CustomizedProperties header;
+        CustomProperties header;
         String apiUrl;
 
-        CustomizedProperties responseProps = new CustomizedProperties();
+        CustomProperties responseProps = new CustomProperties();
 
         private static final String TAG = WebService.class.getName();
 
-        private static CustomizedProperties req = new CustomizedProperties();
+        private static CustomProperties req = new CustomProperties();
         enum responseInfo {
             API,
             UserAgent,
@@ -48,7 +48,7 @@ public class WebService {
 
         }
 
-        public WebService(Activity activity, String apiUrl, CustomizedProperties header){
+        public WebService(Activity activity, String apiUrl, CustomProperties header){
 
             this.activity = activity;
             this.apiUrl = apiUrl;
@@ -56,7 +56,7 @@ public class WebService {
 
         }
 
-        protected void setHeader(HttpURLConnection myURLConnection){
+        protected void setHeaderOLD(HttpURLConnection myURLConnection){
             //String userCredentials = "username:password";
             //String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
             //myURLConnection.setRequestProperty ("Authorization", basicAuth);
@@ -96,6 +96,31 @@ public class WebService {
             return;
         }
 
+    protected void setHeader(HttpURLConnection myURLConnection){
+
+        if (header!=null){
+
+            for(Object key  : header.keySet()) {
+
+                Object value = header.get(key);
+
+                String keyStr = (String) key;
+
+                if (value instanceof String) {
+                    myURLConnection.setRequestProperty(keyStr, value.toString());
+                }
+                if (value instanceof CustomProperties) {
+                    myURLConnection.setRequestProperty(keyStr, value.toString());
+                }
+            }
+        }
+
+        //myURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        //myURLConnection.setRequestProperty("Content-Language", "en-US");
+
+        return;
+    }
+
     // input: getResponse for <syncCall> & <headerd>
     // output: put in output
 /*
@@ -133,6 +158,12 @@ public class WebService {
                 conn.setReadTimeout(15000);
                 conn.setConnectTimeout(15000);
                 conn.setRequestMethod("GET");
+
+
+                conn.setUseCaches(false);
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
 
                 setHeader(conn);
 
@@ -203,18 +234,22 @@ public class WebService {
             return output;
         }
 
-        public CustomizedProperties getResponseProps(){
+        public CustomProperties getResponseProps(){
             return responseProps;
         }
+
+        public CustomProperties getHeaders(){
+        return header;
+    }
 
         public Object[] parseResponseArray(String resp){
             return null;
         }
 
-        public CustomizedProperties parseResponseProp(String resp){
+        public CustomProperties parseResponseProp(String resp){
 
             //String result = "API:" + syncCall + "\n";
-            CustomizedProperties req= new CustomizedProperties();
+            CustomProperties req= new CustomProperties();
             req.add(responseInfo.API,apiUrl);
 
             try {
